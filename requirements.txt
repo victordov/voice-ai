@@ -1,0 +1,9 @@
+langchain
+langchain-openai==0.3.4
+langchain_community
+openai
+pyaudio
+pydub
+setuptools
+streamlit
+streamlit-webrtc

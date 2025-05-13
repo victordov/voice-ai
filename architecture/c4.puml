@@ -1,0 +1,53 @@
+@startuml Voice Assistant Application
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+' CONTEXT DIAGRAM
+Person(user, "User", "A person who wants to interact with the AI assistant")
+System(voiceAssistant, "Voice Assistant", "Allows users to have spoken conversations with an AI")
+System_Ext(openai, "OpenAI API", "Provides AI services: GPT-4, Whisper, and TTS")
+
+Rel(user, voiceAssistant, "Speaks to and listens to")
+Rel(voiceAssistant, openai, "Sends requests to and receives responses from")
+
+' CONTAINER DIAGRAM
+System_Boundary(voiceAssistantSystem, "Voice Assistant System") {
+    Container(webApp, "Streamlit Web Application", "Python, Streamlit", "Provides user interface for voice interaction and displays conversation")
+    ContainerDb(sessionState, "Session State", "Streamlit Session", "Stores conversation history")
+}
+
+Rel(user, webApp, "Records voice and listens to responses")
+Rel(webApp, sessionState, "Stores and retrieves messages")
+Rel(webApp, openai, "Makes API calls")
+
+' COMPONENT DIAGRAM
+Container_Boundary(webAppBoundary, "Streamlit Web Application") {
+    Component(audioRecording, "Audio Recording Module", "PyAudio", "Records audio from microphone")
+    Component(transcription, "Audio Transcription Module", "OpenAI Whisper API", "Converts speech to text")
+    Component(conversationMgr, "Conversation Manager", "LangChain", "Maintains conversation flow")
+    Component(llmIntegration, "LLM Integration", "LangChain OpenAI", "Processes text with GPT-4")
+    Component(textToSpeech, "Text-to-Speech Module", "OpenAI TTS API", "Converts text responses to speech")
+    Component(uiComponents, "User Interface Components", "Streamlit", "Renders UI elements")
+}
+
+Rel(audioRecording, transcription, "Passes recorded audio to")
+Rel(transcription, conversationMgr, "Sends transcribed text to")
+Rel(conversationMgr, llmIntegration, "Invokes for responses")
+Rel(llmIntegration, textToSpeech, "Passes AI responses to")
+Rel(conversationMgr, sessionState, "Updates and retrieves")
+Rel(uiComponents, audioRecording, "Triggers recording")
+Rel(uiComponents, conversationMgr, "Displays messages from")
+Rel(uiComponents, textToSpeech, "Plays audio from")
+
+Rel(transcription, openai, "Calls Whisper API")
+Rel(llmIntegration, openai, "Calls GPT-4 API")
+Rel(textToSpeech, openai, "Calls TTS API")
+
+' DATA FLOW DIAGRAM
+Lay_D(user, webApp)
+Lay_R(webApp, openai)
+Lay_D(webAppBoundary, sessionState)
+
+@enduml

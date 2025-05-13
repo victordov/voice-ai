@@ -1,0 +1,48 @@
+@startuml Voice Assistant Sequence
+actor User
+participant "Streamlit UI" as UI
+participant "Audio Recording" as Recorder
+participant "OpenAI Whisper" as Transcriber
+participant "LangChain/ChatGPT" as LLM
+participant "OpenAI TTS" as TTS
+database "Session State" as State
+
+User -> UI: Click "Record Audio"
+activate UI
+
+UI -> Recorder: record_audio(5)
+activate Recorder
+note right: Records for 5 seconds
+Recorder --> UI: audio_file_path
+deactivate Recorder
+
+UI -> UI: Display recorded audio
+UI -> Transcriber: transcribe_audio(audio_bytes)
+activate Transcriber
+Transcriber --> UI: transcription
+deactivate Transcriber
+
+UI -> UI: Display transcription
+UI -> State: Append HumanMessage
+UI -> LLM: invoke(messages)
+activate LLM
+LLM --> UI: response
+deactivate LLM
+
+UI -> State: Append AIMessage
+UI -> UI: Display response
+UI -> TTS: text_to_speech(response)
+activate TTS
+TTS --> UI: audio_response
+deactivate TTS
+
+UI -> UI: Play audio response
+UI --> User: Complete interaction
+deactivate UI
+
+User -> UI: Click "Clear Conversation"
+activate UI
+UI -> State: Clear messages
+UI --> User: Reset UI
+deactivate UI
+@enduml
